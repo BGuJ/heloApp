@@ -19,12 +19,12 @@ export default function StundenScreen() {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
   const locations = [
-    'Birou Central București',
-    'Magazin Pipera',
-    'Depozit Chitila',
-    'Magazin Baneasa',
-    'Birou Iași',
-    'Lucru de acasă'
+    'Zentrales Büro Bukarest',
+    'Filiale Pipera',
+    'Lager Chitila',
+    'Filiale Baneasa',
+    'Büro Iași',
+    'Homeoffice'
   ];
 
   const generateTimeOptions = () => {
@@ -56,10 +56,10 @@ export default function StundenScreen() {
 
   const handleSubmit = () => {
     if (!formData.date || !formData.location || !formData.startTime || !formData.endTime) {
-      alert('Te rog completează toate câmpurile obligatorii!');
+      alert('Bitte füllen Sie alle Pflichtfelder aus!');
       return;
     }
-    alert('Orele de lucru au fost înregistrate cu succes!');
+    alert('Arbeitsstunden wurden erfolgreich erfasst!');
   };
 
   const today = new Date();
@@ -74,20 +74,20 @@ export default function StundenScreen() {
             <Feather name="clock" size={20} color="#fff" />
           </View>
           <View>
-            <Text style={styles.headerTitle}>Înregistrare Ore</Text>
-            <Text style={styles.headerSubtitle}>Completează datele pentru ziua lucrată</Text>
+            <Text style={styles.headerTitle}>Arbeitszeiterfassung</Text>
+            <Text style={styles.headerSubtitle}>Bitte geben Sie die Daten für den Arbeitstag ein</Text>
           </View>
         </View>
 
         <View style={styles.body}>
           {/* Data lucrată */}
-          <Text style={styles.label}><Feather name="calendar" size={16} />  Data lucrată</Text>
+          <Text style={styles.label}><Feather name="calendar" size={16} />  Arbeitstag</Text>
           <TouchableOpacity
             style={styles.input}
             onPress={() => setShowDatePicker(true)}
           >
             <Text style={{ color: formData.date ? '#222' : '#888' }}>
-              {formData.date ? formData.date : 'tt.mm.aaaa'}
+              {formData.date ? formData.date : 'tt.mm.jjjj'}
             </Text>
             <Feather name="calendar" size={18} color="#888" />
           </TouchableOpacity>
@@ -107,13 +107,13 @@ export default function StundenScreen() {
           )}
 
           {/* Locația de lucru */}
-          <Text style={styles.label}><Feather name="map-pin" size={16} />  Locația de lucru</Text>
+          <Text style={styles.label}><Feather name="map-pin" size={16} />  Arbeitsort</Text>
           <TouchableOpacity
             style={styles.input}
             onPress={() => setShowLocationDropdown(true)}
           >
             <Text style={{ color: formData.location ? '#222' : '#888' }}>
-              {formData.location || 'Selectează locația'}
+              {formData.location || 'Arbeitsort wählen'}
             </Text>
             <Feather name="chevron-down" size={18} color="#888" />
           </TouchableOpacity>
@@ -144,7 +144,7 @@ export default function StundenScreen() {
           {/* Intervalul de timp */}
           <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Ora început</Text>
+              <Text style={styles.label}>Beginn</Text>
               <TouchableOpacity
                 style={styles.input}
                 onPress={() => setShowStartPicker(true)}
@@ -183,7 +183,7 @@ export default function StundenScreen() {
               )}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Ora sfârșit</Text>
+              <Text style={styles.label}>Ende</Text>
               <TouchableOpacity
                 style={styles.input}
                 onPress={() => setShowEndPicker(true)}
@@ -224,7 +224,7 @@ export default function StundenScreen() {
           </View>
 
           {/* Pauze efectuate */}
-          <Text style={[styles.label, { marginTop: 16 }]}><MaterialCommunityIcons name="coffee" size={16} />  Pauze efectuate</Text>
+          <Text style={{ fontWeight: 'bold', marginTop: 16 }}>Pausen</Text>
           <View style={{ gap: 8 }}>
             <TouchableOpacity
               style={[styles.checkboxRow, formData.break9am && styles.checkboxRowActive]}
@@ -234,8 +234,8 @@ export default function StundenScreen() {
                 {formData.break9am && <Feather name="check" size={16} color="#fff" />}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.checkboxLabel}>Pauză 9:00</Text>
-                <Text style={styles.checkboxDesc}>15 minute</Text>
+                <Text style={styles.checkboxLabel}>Pause 9:00</Text>
+                <Text style={styles.checkboxDesc}>15 Minuten</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
@@ -246,22 +246,22 @@ export default function StundenScreen() {
                 {formData.lunchBreak && <Feather name="check" size={16} color="#fff" />}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.checkboxLabel}>Pauză de masă</Text>
-                <Text style={styles.checkboxDesc}>12:00 - 13:00 (60 minute)</Text>
+                <Text style={styles.checkboxLabel}>Mittagspause</Text>
+                <Text style={styles.checkboxDesc}>12:00 - 13:00 (60 Minuten)</Text>
               </View>
             </TouchableOpacity>
           </View>
 
           {/* Calculul orelor */}
           <View style={styles.totalBox}>
-            <Text style={styles.totalLabel}>Total ore lucrate:</Text>
+            <Text style={styles.totalLabel}>Gearbeitete Stunden insgesamt:</Text>
             <Text style={styles.totalValue}>{calculateWorkingHours()}</Text>
           </View>
 
           {/* Buton submit */}
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
             <Feather name="save" size={18} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.submitBtnText}>Înregistrează orele</Text>
+            <Text style={styles.submitBtnText}>Stunden erfassen</Text>
           </TouchableOpacity>
         </View>
       </View>

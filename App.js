@@ -56,25 +56,25 @@ function HomeScreen({ navigation }) {
       label: 'Stunden',
       icon: <Feather name="clock" size={24} color="#3b82f6" />, 
       onPress: () => navigation.navigate('Stunden'),
-      description: 'Înregistrează orele de lucru',
+      description: 'Arbeitsstunden erfassen',
     },
     {
       label: 'Material',
       icon: <MaterialCommunityIcons name="archive-outline" size={24} color="#6b7280" />, 
-      onPress: () => alert('Navighezi către pagina: Material'),
-      description: 'Gestionează materialele',
+      onPress: () => alert('Navigieren zur Seite: Material'),
+      description: 'Materialien verwalten',
     },
     {
-      label: 'Settings',
+      label: 'Einstellungen',
       icon: <Feather name="settings" size={24} color="#6b7280" />, 
-      onPress: () => alert('Navighezi către pagina: Settings'),
-      description: 'Configurează aplicația',
+      onPress: () => alert('Navigieren zur Seite: Einstellungen'),
+      description: 'App konfigurieren',
     },
     {
       label: 'Profil',
       icon: <FontAwesome5 name="user-circle" size={24} color="#6b7280" />, 
-      onPress: () => alert('Navighezi către pagina: Profil'),
-      description: 'Vizualizează profilul',
+      onPress: () => alert('Navigieren zur Seite: Profil'),
+      description: 'Profil anzeigen',
     },
   ];
 
@@ -87,8 +87,8 @@ function HomeScreen({ navigation }) {
             <Feather name="briefcase" size={20} color="#ffffff" />
           </View>
           <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Panou Principal</Text>
-            <Text style={styles.headerSubtitle}>Selectează o opțiune pentru a continua</Text>
+            <Text style={styles.headerTitle}>Partner</Text>
+            <Text style={styles.headerSubtitle}>Wählen Sie eine Option, um fortzufahren</Text>
           </View>
         </View>
       </View>
@@ -117,7 +117,7 @@ function HomeScreen({ navigation }) {
 
         {/* Footer info */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Versiunea 1.0.0</Text>
+          <Text style={styles.footerText}>Version 1.0.0</Text>
         </View>
       </ScrollView>
     </View>
@@ -141,7 +141,7 @@ export default function App() {
         }}
       >
         <Stack.Screen 
-          name="Acasă" 
+          name="Startseite" 
           component={HomeScreen} 
           options={{ headerShown: false }}
         />
@@ -149,7 +149,7 @@ export default function App() {
           name="Stunden" 
           component={StundenScreen}
           options={{ 
-            title: 'Înregistrare Ore',
+            title: 'Arbeitszeiterfassung',
             headerStyle: {
               backgroundColor: '#1e293b',
             },

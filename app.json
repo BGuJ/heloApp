@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "HelloApp",
-    "slug": "HelloApp",
+    "name": "Partner",
+    "slug": "Partner",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
