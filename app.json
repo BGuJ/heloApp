@@ -12,18 +12,39 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.partner"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.boriguj.partner",
+      "versionCode": 1,
+      "permissions": [],
+      "targetSdkVersion": 34,
+      "minSdkVersion": 21,
+      "compileSdkVersion": 34
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c184d8a7-c7d6-4ba6-802c-761cde05943f"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c184d8a7-c7d6-4ba6-802c-761cde05943f"
+    },
+    "owner": "boriguj"
   }
 }

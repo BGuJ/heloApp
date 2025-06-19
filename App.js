@@ -1,10 +1,72 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Easing, LogBox } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import StundenScreen from './StundenScreen';
 import SavedReportsScreen from './SavedReportsScreen';
 import { Feather, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Configurare logging detaliat
+if (__DEV__) {
+  const originalConsoleLog = console.log;
+  console.log = (...args) => {
+    originalConsoleLog(...args);
+    // Salvăm log-urile într-un fișier sau le trimitem la un serviciu
+  };
+}
+
+console.log('App starting...');
+
+// Dezactivăm avertismentele care nu sunt critice
+LogBox.ignoreLogs(['Warning: ...']);
+
+// Menținem splash screen-ul vizibil
+SplashScreen.preventAutoHideAsync().catch((error) => {
+  console.log('Error preventing splash screen auto hide:', error);
+});
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    console.log('Error caught in getDerivedStateFromError:', error);
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.log('Error caught in componentDidCatch:', error);
+    console.log('Error Info:', errorInfo);
+    this.setState({
+      error,
+      errorInfo
+    });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 18, marginBottom: 10 }}>Oops! Something went wrong.</Text>
+          <Text style={{ fontSize: 14, color: 'red', marginBottom: 10 }}>
+            {this.state.error && this.state.error.toString()}
+          </Text>
+          <TouchableOpacity
+            onPress={() => this.setState({ hasError: false, error: null, errorInfo: null })}
+            style={{ padding: 10, backgroundColor: '#2563eb', borderRadius: 5 }}
+          >
+            <Text style={{ color: 'white' }}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 function AnimatedCard({ children, index, ...props }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -131,73 +193,112 @@ function HomeScreen({ navigation }) {
 
 const Stack = createStackNavigator();
 
-export default function App() {
+function App() {
+  console.log('Rendering App component...');
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        console.log('Preparing app resources...');
+        // Simulăm încărcarea
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Resources loaded successfully');
+      } catch (e) {
+        console.error('Error preparing app:', e);
+      } finally {
+        try {
+          console.log('Hiding splash screen...');
+          await SplashScreen.hideAsync();
+          console.log('Splash screen hidden successfully');
+        } catch (e) {
+          console.error('Error hiding splash screen:', e);
+        }
+      }
+    }
+
+    prepare();
+  }, []);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator 
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#1e293b',
-          },
-          headerTintColor: '#ffffff',
-          headerTitleStyle: {
-            fontWeight: '600',
-          },
-        }}
+    <ErrorBoundary>
+      <NavigationContainer
+        onStateChange={(state) => console.log('Navigation state changed:', state)}
+        onError={(error) => console.error('Navigation error:', error)}
       >
-        <Stack.Screen 
-          name="Startseite" 
-          component={HomeScreen} 
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="Stunden" 
-          component={StundenScreen}
-          options={{ 
-            headerTitle: () => (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{
-                  backgroundColor: '#2563eb',
-                  borderRadius: 8,
-                  padding: 6,
-                  marginRight: 8,
-                }}>
-                  <Feather name="clock" size={20} color="#fff" />
-                </View>
-                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>Arbeitszeiterfassung</Text>
-              </View>
-            ),
+        <Stack.Navigator 
+          screenOptions={{
             headerStyle: {
               backgroundColor: '#1e293b',
             },
             headerTintColor: '#ffffff',
-          }}
-        />
-        <Stack.Screen 
-          name="Meine Einträge" 
-          component={SavedReportsScreen}
-          options={{ 
-            headerTitle: () => (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{
-                  backgroundColor: '#2563eb',
-                  borderRadius: 8,
-                  padding: 6,
-                  marginRight: 8,
-                }}>
-                  <MaterialCommunityIcons name="file-document-outline" size={20} color="#fff" />
-                </View>
-                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>Meine Einträge</Text>
-              </View>
-            ),
-            headerStyle: {
-              backgroundColor: '#1e293b',
+            headerTitleStyle: {
+              fontWeight: '600',
             },
-            headerTintColor: '#ffffff',
           }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+        >
+          <Stack.Screen 
+            name="Startseite" 
+            component={HomeScreen} 
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen 
+            name="Stunden" 
+            component={StundenScreen}
+            options={{ 
+              headerTitle: () => (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{
+                    backgroundColor: '#2563eb',
+                    borderRadius: 8,
+                    padding: 6,
+                    marginRight: 8,
+                  }}>
+                    <Feather name="clock" size={20} color="#fff" />
+                  </View>
+                  <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>Arbeitszeiterfassung</Text>
+                </View>
+              ),
+              headerStyle: {
+                backgroundColor: '#1e293b',
+              },
+              headerTintColor: '#ffffff',
+            }}
+          />
+          <Stack.Screen 
+            name="Meine Einträge" 
+            component={SavedReportsScreen}
+            options={{ 
+              headerTitle: () => (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{
+                    backgroundColor: '#2563eb',
+                    borderRadius: 8,
+                    padding: 6,
+                    marginRight: 8,
+                  }}>
+                    <MaterialCommunityIcons name="file-document-outline" size={20} color="#fff" />
+                  </View>
+                  <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>Meine Einträge</Text>
+                </View>
+              ),
+              headerStyle: {
+                backgroundColor: '#1e293b',
+              },
+              headerTintColor: '#ffffff',
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ErrorBoundary>
+  );
+}
+
+export default function AppWrapper() {
+  console.log('Rendering AppWrapper...');
+  return (
+    <View style={{ flex: 1 }} onLayout={() => console.log('AppWrapper layout complete')}>
+      <App />
+    </View>
   );
 }
 
