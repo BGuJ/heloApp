@@ -71,18 +71,6 @@ function HomeScreen({ navigation }) {
       onPress: () => alert('Navigieren zur Seite: Material'),
       description: 'Materialien verwalten',
     },
-    {
-      label: 'Einstellungen',
-      icon: <Feather name="settings" size={24} color="#6b7280" />, 
-      onPress: () => alert('Navigieren zur Seite: Einstellungen'),
-      description: 'App konfigurieren',
-    },
-    {
-      label: 'Profil',
-      icon: <FontAwesome5 name="user-circle" size={24} color="#6b7280" />, 
-      onPress: () => alert('Navigieren zur Seite: Profil'),
-      description: 'Profil anzeigen',
-    },
   ];
 
   return (
@@ -121,12 +109,22 @@ function HomeScreen({ navigation }) {
             </AnimatedCard>
           ))}
         </View>
+      </ScrollView>
 
-        {/* Footer info */}
-        <View style={styles.footer}>
+      {/* Bottom bar fixat cu iconițe și versiune */}
+      <View style={styles.bottomBarFixed}>
+        <View style={styles.bottomBarRow}>
+          <View style={styles.bottomBarIcons}>
+            <TouchableOpacity style={styles.bottomBarButton} onPress={() => alert('Navigieren zur Seite: Einstellungen')}>
+              <Feather name="settings" size={20} color="#6b7280" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.bottomBarButton} onPress={() => alert('Navigieren zur Seite: Profil')}>
+              <FontAwesome5 name="user-circle" size={20} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
           <Text style={styles.footerText}>Version 1.0.0</Text>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -300,12 +298,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  footer: {
+  bottomBarFixed: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 40,
-    paddingTop: 20,
+    padding: 10,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
+  },
+  bottomBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  bottomBarIcons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  bottomBarButton: {
+    padding: 10,
   },
   footerText: {
     fontSize: 12,
