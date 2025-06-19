@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Platform, Modal, Pressable, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons, Feather, FontAwesome5 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute } from '@react-navigation/native';
 
 export default function StundenScreen() {
   const [formData, setFormData] = useState({
@@ -54,16 +56,30 @@ export default function StundenScreen() {
     return `${hours}:${minutes.toString().padStart(2, '0')}`;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.date || !formData.location || !formData.startTime || !formData.endTime) {
       alert('Bitte füllen Sie alle Pflichtfelder aus!');
       return;
     }
-    alert('Arbeitsstunden wurden erfolgreich erfasst!');
+    const key = `report-${formData.date}`;
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(formData));
+      alert('Arbeitsstunden wurden erfolgreich erfasst!');
+    } catch (e) {
+      alert('Fehler beim Speichern!');
+    }
   };
 
   const today = new Date();
   const maxDate = today.toISOString().split('T')[0];
+
+  const route = useRoute();
+
+  useEffect(() => {
+    if (route.params && route.params.editData) {
+      setFormData(route.params.editData);
+    }
+  }, [route.params]);
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f5f6fa' }} contentContainerStyle={{ paddingVertical: 16 }}>

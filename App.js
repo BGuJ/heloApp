@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Easing 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import StundenScreen from './StundenScreen';
+import SavedReportsScreen from './SavedReportsScreen';
 import { Feather, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 
 function AnimatedCard({ children, index, ...props }) {
@@ -57,6 +58,12 @@ function HomeScreen({ navigation }) {
       icon: <Feather name="clock" size={24} color="#3b82f6" />, 
       onPress: () => navigation.navigate('Stunden'),
       description: 'Arbeitsstunden erfassen',
+    },
+    {
+      label: 'Meine Einträge',
+      icon: <MaterialCommunityIcons name="file-document-outline" size={24} color="#6b7280" />, 
+      onPress: () => navigation.navigate('Meine Einträge'),
+      description: 'Gespeicherte Berichte anzeigen',
     },
     {
       label: 'Material',
@@ -150,6 +157,16 @@ export default function App() {
           component={StundenScreen}
           options={{ 
             title: 'Arbeitszeiterfassung',
+            headerStyle: {
+              backgroundColor: '#1e293b',
+            },
+          }}
+        />
+        <Stack.Screen 
+          name="Meine Einträge" 
+          component={SavedReportsScreen}
+          options={{ 
+            title: 'Meine Einträge',
             headerStyle: {
               backgroundColor: '#1e293b',
             },
