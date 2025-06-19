@@ -156,20 +156,46 @@ export default function App() {
           name="Stunden" 
           component={StundenScreen}
           options={{ 
-            title: 'Arbeitszeiterfassung',
+            headerTitle: () => (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{
+                  backgroundColor: '#2563eb',
+                  borderRadius: 8,
+                  padding: 6,
+                  marginRight: 8,
+                }}>
+                  <Feather name="clock" size={20} color="#fff" />
+                </View>
+                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>Arbeitszeiterfassung</Text>
+              </View>
+            ),
             headerStyle: {
               backgroundColor: '#1e293b',
             },
+            headerTintColor: '#ffffff',
           }}
         />
         <Stack.Screen 
           name="Meine Einträge" 
           component={SavedReportsScreen}
           options={{ 
-            title: 'Meine Einträge',
+            headerTitle: () => (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{
+                  backgroundColor: '#2563eb',
+                  borderRadius: 8,
+                  padding: 6,
+                  marginRight: 8,
+                }}>
+                  <MaterialCommunityIcons name="file-document-outline" size={20} color="#fff" />
+                </View>
+                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>Meine Einträge</Text>
+              </View>
+            ),
             headerStyle: {
               backgroundColor: '#1e293b',
             },
+            headerTintColor: '#ffffff',
           }}
         />
       </Stack.Navigator>

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
-export default function SavedReportsScreen({ navigation }) {
+export default function SavedReportsScreen(props) {
+  const navigation = useNavigation();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -112,18 +114,6 @@ export default function SavedReportsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <View style={styles.iconContainer}>
-            <MaterialCommunityIcons name="file-document-outline" size={20} color="#fff" />
-          </View>
-          <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Meine Einträge</Text>
-            <Text style={styles.headerSubtitle}>Alle lokal gespeicherten Berichte</Text>
-          </View>
-        </View>
-      </View>
-
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {loading ? (
           <Text style={styles.messageText}>Laden...</Text>
@@ -201,6 +191,15 @@ export default function SavedReportsScreen({ navigation }) {
         )}
       </ScrollView>
 
+      {/* FAB pentru adăugare rapidă */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate('Stunden')}
+        activeOpacity={0.8}
+      >
+        <Feather name="plus" size={28} color="#fff" />
+      </TouchableOpacity>
+
       {/* Dialog acțiuni */}
       <Modal
         visible={showActionsDialog}
@@ -263,11 +262,19 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 16,
     paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
+    borderRadius: 8,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
   iconContainer: {
     backgroundColor: '#3b82f6',
@@ -287,8 +294,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#cbd5e1',
+    fontSize: 12,
+    color: '#6b7280',
   },
   scrollView: {
     flex: 1,
@@ -439,5 +446,21 @@ const styles = StyleSheet.create({
   },
   deleteText: {
     color: '#ef4444',
+  },
+  fab: {
+    position: 'absolute',
+    right: 24,
+    bottom: 32,
+    backgroundColor: '#2563eb',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 6,
   },
 }); 

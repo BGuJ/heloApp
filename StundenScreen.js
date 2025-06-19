@@ -224,20 +224,6 @@ export default function StundenScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f5f6fa' }} contentContainerStyle={{ paddingVertical: 16 }}>
       <View style={styles.card}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerIconBox}>
-            <Feather name="clock" size={20} color="#fff" />
-          </View>
-          <View>
-            <Text style={styles.headerTitle}>
-              {isEditing ? 'Eintrag bearbeiten' : 'Arbeitszeiterfassung'}
-            </Text>
-            <Text style={styles.headerSubtitle}>
-              {isEditing ? 'Bearbeiten Sie die Daten für den Arbeitstag' : 'Bitte geben Sie die Daten für den Arbeitstag ein'}
-            </Text>
-          </View>
-        </View>
 
         <View style={styles.body}>
           {/* Debug info - să vedem ce se întâmplă */}
@@ -463,24 +449,6 @@ const styles = StyleSheet.create({
     elevation: 4,
     marginBottom: 24,
     overflow: 'hidden',
-  },
-  header: {
-    backgroundColor: '#1e293b',
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    gap: 12,
-  },
-  headerIconBox: {
-    backgroundColor: '#2563eb',
-    padding: 8,
-    borderRadius: 8,
-    marginRight: 10,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   headerSubtitle: {
     color: '#cbd5e1',
