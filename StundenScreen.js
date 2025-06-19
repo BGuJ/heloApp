@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Platform, Modal, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Platform, Modal, Pressable, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons, Feather, FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import Toast from 'react-native-root-toast';
 
 export default function StundenScreen() {
   const [formData, setFormData] = useState({
@@ -19,6 +20,8 @@ export default function StundenScreen() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [oldKey, setOldKey] = useState(null);
 
   const locations = [
     'Zentrales Büro Bukarest',
@@ -57,16 +60,126 @@ export default function StundenScreen() {
   };
 
   const handleSubmit = async () => {
+    console.log('HANDLE SUBMIT CALLED!');
+    console.log('FormData:', formData);
+    console.log('IsEditing:', isEditing);
+    console.log('OldKey:', oldKey);
+    
     if (!formData.date || !formData.location || !formData.startTime || !formData.endTime) {
-      alert('Bitte füllen Sie alle Pflichtfelder aus!');
+      console.log('VALIDATION FAILED - missing fields');
+      Alert.alert('Fehler', 'Bitte füllen Sie alle Pflichtfelder aus!');
       return;
     }
-    const key = `report-${formData.date}`;
+    
+    console.log('VALIDATION PASSED - all fields present');
+    
+    // Validare: Ende > Begin
+    const toMinutes = t => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    };
+    if (toMinutes(formData.endTime) <= toMinutes(formData.startTime)) {
+      console.log('VALIDATION FAILED - end time <= start time');
+      Alert.alert('Fehler', 'Die Endzeit muss nach der Startzeit liegen!');
+      return;
+    }
+    
+    console.log('TIME VALIDATION PASSED');
+    
+    // Validare: suprapunere intervale pentru aceeași zi (exclude oldKey dacă edităm)
+    const keys = await AsyncStorage.getAllKeys();
+    const reportKeys = keys.filter(key => key.startsWith('report-'));
+    const stores = await AsyncStorage.multiGet(reportKeys);
+    const sameDayReports = stores
+      .map(([key, value]) => ({ key, ...(value ? JSON.parse(value) : {}) }))
+      .filter(report => {
+        // Exclude intrarea curentă dacă edităm
+        if (isEditing && report.key === oldKey) {
+          console.log('Excluding old entry from overlap check:', oldKey);
+          return false;
+        }
+        // Verifică doar înregistrările din aceeași zi
+        return report.date === formData.date;
+      });
+    
+    console.log('Same day reports (excluding oldKey):', sameDayReports);
+    
+    const newStart = toMinutes(formData.startTime);
+    const newEnd = toMinutes(formData.endTime);
+    const overlap = sameDayReports.some(r => {
+      const start = toMinutes(r.startTime);
+      const end = toMinutes(r.endTime);
+      const hasOverlap = (newStart < end) && (start < newEnd);
+      if (hasOverlap) {
+        console.log('Found overlap with:', r);
+      }
+      return hasOverlap;
+    });
+    
+    if (overlap) {
+      console.log('VALIDATION FAILED - time overlap detected');
+      Alert.alert('Fehler', 'Zeitüberschneidung! Sie haben bereits einen Eintrag in diesem Zeitraum.');
+      return;
+    }
+    
+    console.log('OVERLAP VALIDATION PASSED');
+    
     try {
-      await AsyncStorage.setItem(key, JSON.stringify(formData));
-      alert('Arbeitsstunden wurden erfolgreich erfasst!');
+      const locationIndex = locations.indexOf(formData.location);
+      const newKey = `report-${formData.date}-${locationIndex}-${formData.startTime.replace(':', '')}`;
+      
+      console.log('New key will be:', newKey);
+      
+      // Verifică dacă noua cheie este diferită de cea veche
+      if (isEditing && newKey === oldKey) {
+        console.log('Key unchanged, updating existing entry');
+      } else {
+        // Dacă edităm și cheia e diferită, șterge intrarea veche
+        if (isEditing && oldKey) {
+          console.log('Deleting old entry:', oldKey);
+          await AsyncStorage.removeItem(oldKey);
+          
+          // Verifică dacă ștergerea a reușit
+          const checkDelete = await AsyncStorage.getItem(oldKey);
+          if (checkDelete === null) {
+            console.log('Old entry successfully deleted');
+            Alert.alert('Erfolg', 'Alte Eintrag wurde gelöscht');
+          } else {
+            console.log('Failed to delete old entry');
+            throw new Error('Fehler beim Löschen des alten Eintrags');
+          }
+        }
+      }
+      
+      // Salvează intrarea nouă
+      console.log('Saving entry with key:', newKey);
+      await AsyncStorage.setItem(newKey, JSON.stringify({
+        ...formData,
+        key: newKey // Adăugăm cheia în obiectul salvat pentru referință ulterioară
+      }));
+      
+      // Verifică dacă salvarea a reușit
+      const checkSave = await AsyncStorage.getItem(newKey);
+      if (checkSave === null) {
+        console.log('Failed to save entry');
+        throw new Error('Fehler beim Speichern des Eintrags');
+      }
+      
+      const message = isEditing ? 'Eintrag wurde erfolgreich bearbeitet!' : 'Arbeitsstunden wurden erfolgreich erfasst!';
+      console.log('SUCCESS - showing message:', message);
+      Alert.alert('Erfolg', message, [
+        {
+          text: 'OK',
+          onPress: () => {
+            // După ce utilizatorul confirmă, navigăm înapoi
+            navigation.navigate('Meine Einträge');
+          }
+        }
+      ]);
+      
     } catch (e) {
-      alert('Fehler beim Speichern!');
+      console.log('ERROR in handleSubmit:', e);
+      Alert.alert('Fehler', 'Fehler beim Speichern! ' + (e && e.message ? e.message : e));
     }
   };
 
@@ -74,12 +187,39 @@ export default function StundenScreen() {
   const maxDate = today.toISOString().split('T')[0];
 
   const route = useRoute();
+  const navigation = useNavigation();
 
   useEffect(() => {
     if (route.params && route.params.editData) {
+      console.log('EDIT DATA RECEIVED:', route.params.editData);
+      console.log('EDIT KEY RECEIVED:', route.params.editKey);
+      
       setFormData(route.params.editData);
+      setIsEditing(true);
+      setOldKey(route.params.editKey);
+    } else {
+      // Reset la creare nouă
+      setFormData({
+        date: '',
+        location: '',
+        startTime: '',
+        endTime: '',
+        break9am: false,
+        lunchBreak: false
+      });
+      setIsEditing(false);
+      setOldKey(null);
     }
   }, [route.params]);
+
+  // Funcție pentru a obține data pentru DateTimePicker
+  const getDateForPicker = () => {
+    if (formData.date) {
+      const [year, month, day] = formData.date.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return today;
+  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f5f6fa' }} contentContainerStyle={{ paddingVertical: 16 }}>
@@ -90,12 +230,25 @@ export default function StundenScreen() {
             <Feather name="clock" size={20} color="#fff" />
           </View>
           <View>
-            <Text style={styles.headerTitle}>Arbeitszeiterfassung</Text>
-            <Text style={styles.headerSubtitle}>Bitte geben Sie die Daten für den Arbeitstag ein</Text>
+            <Text style={styles.headerTitle}>
+              {isEditing ? 'Eintrag bearbeiten' : 'Arbeitszeiterfassung'}
+            </Text>
+            <Text style={styles.headerSubtitle}>
+              {isEditing ? 'Bearbeiten Sie die Daten für den Arbeitstag' : 'Bitte geben Sie die Daten für den Arbeitstag ein'}
+            </Text>
           </View>
         </View>
 
         <View style={styles.body}>
+          {/* Debug info - să vedem ce se întâmplă */}
+          {isEditing && (
+            <View style={{ backgroundColor: '#fef3c7', padding: 8, borderRadius: 4, marginBottom: 10 }}>
+              <Text style={{ fontSize: 12, color: '#92400e' }}>
+                EDIT MODE - Old Key: {oldKey}
+              </Text>
+            </View>
+          )}
+
           {/* Data lucrată */}
           <Text style={styles.label}><Feather name="calendar" size={16} />  Arbeitstag</Text>
           <TouchableOpacity
@@ -109,7 +262,7 @@ export default function StundenScreen() {
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
-              value={formData.date ? new Date(formData.date) : today}
+              value={getDateForPicker()}
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               maximumDate={today}
@@ -275,9 +428,22 @@ export default function StundenScreen() {
           </View>
 
           {/* Buton submit */}
-          <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+          <TouchableOpacity 
+            style={styles.submitBtn} 
+            onPress={() => {
+              console.log('BUTTON PRESSED!');
+              handleSubmit();
+            }}
+          >
             <Feather name="save" size={18} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.submitBtnText}>Stunden erfassen</Text>
+            <Text style={styles.submitBtnText}>
+              {isEditing ? 'Änderungen speichern' : 'Stunden erfassen'}
+            </Text>
+          </TouchableOpacity>
+          {/* Buton navigare directă spre Meine Einträge */}
+          <TouchableOpacity style={styles.entriesBtn} onPress={() => navigation.navigate('Meine Einträge')}>
+            <Feather name="list" size={18} color="#3b82f6" style={{ marginRight: 8 }} />
+            <Text style={styles.entriesBtnText}>Zu "Meine Einträge"</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -437,6 +603,20 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  entriesBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e0e7ff',
+    borderRadius: 8,
+    paddingVertical: 12,
+    marginTop: 16,
+  },
+  entriesBtnText: {
+    color: '#1e293b',
+    fontSize: 15,
     fontWeight: 'bold',
   },
 }); 

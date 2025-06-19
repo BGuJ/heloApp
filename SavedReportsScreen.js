@@ -13,13 +13,39 @@ export default function SavedReportsScreen({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
+  const toDateTimeValue = (date, time) => {
+    if (!date || !time) return 0;
+    return Number(date.replace(/-/g, '') + time.replace(':', ''));
+  };
+
   const loadReports = async () => {
     setLoading(true);
-    const keys = await AsyncStorage.getAllKeys();
-    const reportKeys = keys.filter(key => key.startsWith('report-'));
-    const stores = await AsyncStorage.multiGet(reportKeys);
-    setReports(stores.map(([key, value]) => ({ key, ...(value ? JSON.parse(value) : {}) })));
-    setLoading(false);
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const reportKeys = keys.filter(key => key.startsWith('report-'));
+      const stores = await AsyncStorage.multiGet(reportKeys);
+      const reports = stores
+        .map(([key, value]) => ({ key, ...(value ? JSON.parse(value) : {}) }))
+        .filter(report => report.date && report.location) // Filtrează doar înregistrările valide
+        .sort((a, b) => {
+          // Sortează mai întâi după dată (descrescător - cele mai noi primele)
+          const dateComparison = new Date(b.date) - new Date(a.date);
+          if (dateComparison !== 0) return dateComparison;
+          
+          // Dacă data este aceeași, sortează după ora de început (descrescător)
+          if (a.startTime && b.startTime) {
+            return b.startTime.localeCompare(a.startTime);
+          }
+          return 0;
+        });
+      
+      setReports(reports);
+    } catch (error) {
+      console.error('Eroare la încărcarea rapoartelor:', error);
+      setReports([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteReport = (key) => {
@@ -56,9 +82,22 @@ export default function SavedReportsScreen({ navigation }) {
               <View style={styles.cardContent}>
                 <View style={styles.cardIcon}><Feather name="calendar" size={24} color="#3b82f6" /></View>
                 <View style={styles.cardTextContainer}>
-                  <Text style={styles.cardTitle}>{item.date || item.key}</Text>
-                  <Text style={styles.cardDescription}>{item.location || ''}</Text>
-                  <Text style={styles.cardDescription}>{item.startTime && item.endTime ? `${item.startTime} - ${item.endTime}` : ''}</Text>
+                  <Text style={styles.cardTitle}>
+                    {item.date ? new Date(item.date).toLocaleDateString('de-DE') : 'Datum unbekannt'}
+                  </Text>
+                  <Text style={styles.cardDescription}>
+                    <Feather name="map-pin" size={12} color="#6b7280" /> {item.location || 'Standort unbekannt'}
+                  </Text>
+                  <Text style={styles.cardDescription}>
+                    <Feather name="clock" size={12} color="#6b7280" /> {item.startTime && item.endTime ? `${item.startTime} - ${item.endTime}` : 'Zeit unbekannt'}
+                  </Text>
+                  {item.break9am || item.lunchBreak ? (
+                    <Text style={styles.cardDescription}>
+                      <Feather name="coffee" size={12} color="#6b7280" /> 
+                      {item.break9am && item.lunchBreak ? 'Pausen: 9:00 + Mittag' : 
+                       item.break9am ? 'Pause: 9:00' : 'Pause: Mittag'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.cardActions}>
                   <TouchableOpacity onPress={() => navigation.navigate('Stunden', { editKey: item.key, editData: item })}>
